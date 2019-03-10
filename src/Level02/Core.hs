@@ -71,11 +71,7 @@ mkAddRequest
   :: Text
   -> LBS.ByteString
   -> Either Error RqType
-mkAddRequest t b = case topic of 
-  Left e1 -> Left e1
-  Right t1 -> case comment of 
-    Left e2 -> Left e2
-    Right c1 -> Right (AddRq t1 c1)
+mkAddRequest t b = either (Left) (\x -> either (Left) (Right . AddRq x) comment) topic
   where
     -- This is a helper function to assist us in going from a Lazy ByteString, to a Strict Text
     lazyByteStringToStrictText =
