@@ -16,7 +16,7 @@ import           Data.Either              (either)
 import           Data.Text                (Text)
 import           Data.Text.Encoding       (decodeUtf8)
 
-import           Level02.Types            (ContentType, Error, RqType,
+import           Level02.Types            (ContentType, Error, RqType(..),
                                            mkCommentText, mkTopic,
                                            renderContentType)
 
@@ -25,34 +25,35 @@ import           Level02.Types            (ContentType, Error, RqType,
 -- |-------------------------------------------|
 
 -- | Some helper functions to make our lives a little more DRY.
+-- 
 mkResponse
   :: Status
   -> ContentType
   -> LBS.ByteString
   -> Response
-mkResponse =
-  error "mkResponse not implemented"
+mkResponse s c b = responseLBS s [("Content-Type", contentType)] b
+  where contentType = renderContentType c
 
 resp200
   :: ContentType
   -> LBS.ByteString
   -> Response
-resp200 =
-  error "resp200 not implemented"
+resp200 c b = responseLBS status200 [("Content-Type", contentType)] b
+  where contentType = renderContentType c
 
 resp404
   :: ContentType
   -> LBS.ByteString
   -> Response
-resp404 =
-  error "resp404 not implemented"
+resp404 c b = responseLBS status404 [("Content-Type", contentType)] b
+  where contentType = renderContentType c
 
 resp400
   :: ContentType
   -> LBS.ByteString
   -> Response
-resp400 =
-  error "resp400 not implemented"
+resp400 c b = responseLBS status400 [("Content-Type", contentType)] b
+  where contentType = renderContentType c
 
 -- |----------------------------------------------------------------------------------
 -- These next few functions will take raw request information and construct         --
@@ -63,17 +64,24 @@ resp400 =
 -- and verify. It also allows for greater reuse and it also means that              --
 -- validation is not duplicated across the application, maybe incorrectly.          --
 --------------------------------------------------------------------------------------
-
+-- t is the topic
+-- b is the bytestring containing the comment
+-- need to return error if it is comment validation is bad
 mkAddRequest
   :: Text
   -> LBS.ByteString
   -> Either Error RqType
-mkAddRequest =
-  error "mkAddRequest not implemented"
+mkAddRequest t b = case topic of 
+  Left e1 -> Left e1
+  Right t1 -> case comment of 
+    Left e2 -> Left e2
+    Right c1 -> Right (AddRq t1 c1)
   where
     -- This is a helper function to assist us in going from a Lazy ByteString, to a Strict Text
     lazyByteStringToStrictText =
       decodeUtf8 . LBS.toStrict
+    topic = mkTopic t
+    comment = mkCommentText (lazyByteStringToStrictText b)
 
 mkViewRequest
   :: Text
